@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi-Tech Neon Tic-Tac-Toe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #05050a;
+            --grid-neon: #0ff;
+            --x-neon: #0ff;
+            --o-neon: #f0f;
+            --danger-neon: #ff003c;
+            --warning-neon: #ffaa00;
+            --text-glow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.5);
+            --danger-glow: 0 0 10px rgba(255, 0, 60, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: var(--text-glow), 0 0 20px var(--grid-neon);
+        }
+
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 255, 0.05);
+            padding: 15px 30px;
+            border: 1px solid var(--grid-neon);
+            border-radius: 10px;
+            box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.1), 0 0 15px rgba(0, 255, 255, 0.2);
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 1.1rem;
+            color: var(--grid-neon);
+            text-shadow: 0 0 5px var(--grid-neon);
+        }
+
+        select {
+            background: transparent;
+            color: #fff;
+            border: 1px solid var(--grid-neon);
+            padding: 10px;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            text-shadow: 0 0 5px var(--grid-neon);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            transition: 0.3s;
+        }
+
+        select option {
+            background: var(--bg-color);
+            color: var(--grid-neon);
+        }
+
+        select:hover {
+            box-shadow: 0 0 20px var(--grid-neon);
+        }
+
+        select#difficulty option[value="doomsday"] {
+            color: var(--danger-neon);
+            text-shadow: var(--danger-glow);
+        }
+
+        /* Timer UI */
+        .timer-wrapper {
+            width: 100%;
+            max-width: 650px;
+            height: 10px;
+            background: rgba(255, 0, 60, 0.1);
+            border: 1px solid var(--danger-neon);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(255, 0, 60, 0.2);
+            overflow: hidden;
+            display: none;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--danger-neon);
+            box-shadow: 0 0 15px var(--danger-neon);
+            transform-origin: left;
+        }
+
+        .board {
+            display: grid;
+            gap: 0;
+            border: 2px solid var(--grid-neon);
+            box-shadow: 0 0 20px var(--grid-neon), inset 0 0 20px var(--grid-neon);
+            border-radius: 5px;
+            background: var(--bg-color);
+            position: relative;
+        }
+
+        /* Start Warning Overlay over the board */
+        .start-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 5, 10, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            padding: 20px;
+            text-align: center;
+            border-radius: 3px;
+        }
+
+        .start-screen h3 {
+            color: var(--warning-neon);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--warning-neon);
+        }
+
+        .start-screen p {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+            max-width: 80%;
+        }
+
+        .start-btn {
+            background: transparent;
+            color: var(--danger-neon);
+            border: 2px solid var(--danger-neon);
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.4), inset 0 0 15px rgba(255, 0, 60, 0.2);
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+
+        .start-btn:hover {
+            background: var(--danger-neon);
+            color: #000;
+            box-shadow: 0 0 30px var(--danger-neon);
+        }
+
+        .loading {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 5, 10, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--o-neon);
+            text-shadow: 0 0 10px var(--o-neon);
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            cursor: pointer;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .cell:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: inset 0 0 15px var(--grid-neon);
+        }
+
+        .cell.x {
+            color: var(--x-neon);
+            text-shadow: 0 0 10px var(--x-neon), 0 0 20px var(--x-neon), 0 0 40px var(--x-neon);
+        }
+
+        .cell.o {
+            color: var(--o-neon);
+            text-shadow: 0 0 10px var(--o-neon), 0 0 20px var(--o-neon), 0 0 40px var(--o-neon);
+        }
+
+        /* Fullscreen Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 5, 10, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay h2 {
+            font-size: 6rem;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            color: #fff;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            animation: pulse 1s infinite alternate;
+        }
+
+        .win-x {
+            color: var(--x-neon);
+            text-shadow: 0 0 20px var(--x-neon), 0 0 50px var(--x-neon), 0 0 100px var(--x-neon);
+        }
+
+        .win-o {
+            color: var(--o-neon);
+            text-shadow: 0 0 20px var(--o-neon), 0 0 50px var(--o-neon), 0 0 100px var(--o-neon);
+        }
+
+        .win-danger {
+            color: var(--danger-neon);
+            text-shadow: 0 0 20px var(--danger-neon), 0 0 50px var(--danger-neon), 0 0 100px var(--danger-neon);
+        }
+
+        .draw {
+            color: #fff;
+            text-shadow: 0 0 20px #fff, 0 0 50px #fff;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>TIC TAC TOE</h1>
+    
+    <div class="hud">
+        <div class="hud-group">
+            <label for="boardSize">GRID:</label>
+            <select id="boardSize" onchange="initGame()">
+                <option value="3">3x3 (Classic)</option>
+                <option value="4">4x4 (Advanced)</option>
+                <option value="5">5x5 (Expert)</option>
+                <option value="6">6x6 (Ultimate)</option>
+            </select>
+        </div>
+        <div class="hud-group">
+            <label for="difficulty">LEVELS:</label>
+            <select id="difficulty" onchange="initGame()">
+                <option value="easy">V1.0 - GLITCH</option>
+                <option value="medium">V2.0 - FIREWALL</option>
+                <option value="hard">V3.0 - NEXUS (2s limit)</option>
+                <option value="doomsday" selected>V4.0 - DOOMSDAY (1.5s limit)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="timer-wrapper" id="timerWrapper">
+        <div class="timer-bar" id="timerBar"></div>
+    </div>
+
+    <div class="board" id="board">
+        <div class="start-screen" id="startScreen" style="display: none;">
+            <h3>⚠️ TIME CRITICAL PROTOCOL ⚠️</h3>
+            <p id="warningText">HIGH SPEED AI ENGAGED. TIMER WILL START IMMEDIATELY AFTER LAUNCH.</p>
+            <button class="start-btn" onclick="startTimedMode()">ENGAGE PROTOCOL</button>
+        </div>
+        <div class="loading" id="loading">CALCULATING...</div>
+    </div>
+
+    <div id="overlay" class="overlay">
+        <h2 id="winnerText">WINNER</h2>
+        <p>SYSTEM REBOOTING IN 3 SECONDS...</p>
+    </div>
+
+    <script>
+        const difficultySelect = document.getElementById('difficulty');
+        const boardSizeSelect = document.getElementById('boardSize');
+        const overlay = document.getElementById('overlay');
+        const winnerText = document.getElementById('winnerText');
+        const boardElem = document.getElementById('board');
+        const loadingIndicator = document.getElementById('loading');
+        const startScreen = document.getElementById('startScreen');
+        const warningText = document.getElementById('warningText');
+        
+        const timerWrapper = document.getElementById('timerWrapper');
+        const timerBar = document.getElementById('timerBar');
+        
+        const PLAYER = 'X';
+        const AI = 'O';
+        
+        let size = 3;
+        let board = [];
+        let isGameActive = false;
+        let isPlayerTurn = true;
+        let winPatterns = [];
+        
+        let turnTimer;
+        let timeLimit = 0;
+
+        function initGame() {
+            stopTimer();
+            size = parseInt(boardSizeSelect.value);
+            board = new Array(size * size).fill('');
+            isPlayerTurn = true;
+            generateWinPatterns();
+            renderBoard();
+
+            const diff = difficultySelect.value;
+            if (diff === 'hard' || diff === 'doomsday') {
+                isGameActive = false;
+                timerWrapper.style.display = 'block';
+                timerBar.style.transform = 'scaleX(1)';
+                startScreen.style.display = 'flex';
+                warningText.innerText = diff === 'doomsday' 
+                    ? "ULTRASONIC AI ENGAGED. YOU HAVE EXACTLY 1.5 SECONDS PER MOVE."
+                    : "ADVANCED AI ENGAGED. YOU HAVE EXACTLY 2.0 SECONDS PER MOVE.";
+            } else {
+                startScreen.style.display = 'none';
+                timerWrapper.style.display = 'none';
+                isGameActive = true;
+            }
+        }
+
+        function startTimedMode() {
+            startScreen.style.display = 'none';
+            isGameActive = true;
+            startTimer();
+        }
+
+        function generateWinPatterns() {
+            winPatterns = [];
+            for (let i = 0; i < size; i++) {
+                let row = [];
+                for (let j = 0; j < size; j++) row.push(i * size + j);
+                winPatterns.push(row);
+            }
+            for (let i = 0; i < size; i++) {
+                let col = [];
+                for (let j = 0; j < size; j++) col.push(j * size + i);
+                winPatterns.push(col);
+            }
+            let diag1 = [], diag2 = [];
+            for (let i = 0; i < size; i++) {
+                diag1.push(i * size + i);
+                diag2.push(i * size + (size - 1 - i));
+            }
+            winPatterns.push(diag1);
+            winPatterns.push(diag2);
+        }
+
+        function renderBoard() {
+            const existingCells = boardElem.querySelectorAll('.cell');
+            existingCells.forEach(c => c.remove());
+
+            boardElem.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            boardElem.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+
+            let cellSize = size === 3 ? 120 : (size === 4 ? 95 : (size === 5 ? 75 : 65));
+            let fontSize = size === 3 ? 5 : (size === 4 ? 4 : (size === 5 ? 3 : 2.5));
+
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.style.width = `${cellSize}px`;
+                cell.style.height = `${cellSize}px`;
+                cell.style.fontSize = `${fontSize}rem`;
+                cell.setAttribute('data-index', i);
+                cell.addEventListener('click', () => handleCellClick(cell));
+                boardElem.appendChild(cell);
+            }
+        }
+
+        function startTimer() {
+            if (!isGameActive || !isPlayerTurn) return;
+
+            const difficulty = difficultySelect.value;
+            if (difficulty === 'hard') timeLimit = 2000;
+            else if (difficulty === 'doomsday') timeLimit = 1500;
+            else timeLimit = 0;
+
+            if (timeLimit > 0) {
+                timerBar.style.transition = 'none';
+                timerBar.style.transform = 'scaleX(1)';
+                void timerBar.offsetWidth; 
+
+                timerBar.style.transition = `transform ${timeLimit}ms linear`;
+                timerBar.style.transform = 'scaleX(0)';
+
+                turnTimer = setTimeout(() => {
+                    if (isPlayerTurn && isGameActive) {
+                        triggerEndGame("TIME OUT - SYSTEM WINS", 'win-danger');
+                    }
+                }, timeLimit);
+            }
+        }
+
+        function stopTimer() {
+            clearTimeout(turnTimer);
+            timerBar.style.transition = 'none';
+            timerBar.style.transform = 'scaleX(1)';
+        }
+
+        function handleCellClick(cell) {
+            const index = cell.getAttribute('data-index');
+
+            if (board[index] !== '' || !isGameActive || !isPlayerTurn) return;
+
+            stopTimer(); 
+            makeMove(index, PLAYER);
+
+            if (checkWin(board, PLAYER)) {
+                triggerEndGame("PLAYER WINS", 'win-x');
+            } else if (checkDraw(board)) {
+                triggerEndGame("DRAW / FULL", 'draw');
+            } else {
+                isPlayerTurn = false;
+                
+                if (difficultySelect.value === 'doomsday' && size > 3) {
+                    loadingIndicator.classList.add('active');
+                    setTimeout(() => {
+                        makeBotMove();
+                        loadingIndicator.classList.remove('active');
+                    }, 50);
+                } else {
+                    setTimeout(makeBotMove, 150); 
+                }
+            }
+        }
+
+        function makeMove(index, player) {
+            board[index] = player;
+            const cells = document.querySelectorAll('.cell');
+            cells[index].innerText = player;
+            cells[index].classList.add(player.toLowerCase());
+        }
+
+        function makeBotMove() {
+            if (!isGameActive) return;
+
+            const difficulty = difficultySelect.value;
+            let bestMoveIndex;
+
+            if (difficulty === 'easy') {
+                bestMoveIndex = getRandomMove(board);
+            } else if (difficulty === 'medium') {
+                bestMoveIndex = getMediumMove(board);
+            } else if (difficulty === 'hard') {
+                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 4 : 3)); 
+            } else {
+                // DOOMSDAY: Increased search depth due to Move Ordering optimization
+                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 5 : 4)); 
+            }
+
+            makeMove(bestMoveIndex, AI);
+
+            if (checkWin(board, AI)) {
+                triggerEndGame("SYSTEM WINS", 'win-o');
+            } else if (checkDraw(board)) {
+                triggerEndGame("DRAW / FULL", 'draw');
+            } else {
+                isPlayerTurn = true;
+                startTimer(); 
+            }
+        }
+
+        // --- ENHANCED BOT PROTOCOLS ---
+
+        function getEmptyCells(currentBoard) {
+            return currentBoard.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
+        }
+
+        // Move Ordering: Prioritize center and cells adjacent to occupied pieces for faster pruning
+        function getOrderedMoves(currentBoard) {
+            const emptyCells = getEmptyCells(currentBoard);
+            const center = Math.floor((size * size) / 2);
+
+            return emptyCells.sort((a, b) => {
+                if (a === center) return -1;
+                if (b === center) return 1;
+                
+                // Count occupied neighbors
+                return countNeighbors(currentBoard, b) - countNeighbors(currentBoard, a);
+            });
+        }
+
+        function countNeighbors(currentBoard, idx) {
+            let r = Math.floor(idx / size);
+            let c = idx % size;
+            let count = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    let nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                        if (currentBoard[nr * size + nc] !== '') count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        function getRandomMove(currentBoard) {
+            const emptyCells = getEmptyCells(currentBoard);
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        function getMediumMove(currentBoard) {
+            let move = findWinningMove(currentBoard, AI);
+            if (move !== -1) return move;
+            
+            move = findWinningMove(currentBoard, PLAYER);
+            if (move !== -1) return move;
+            
+            return getRandomMove(currentBoard);
+        }
+
+        function findWinningMove(currentBoard, player) {
+            const emptyCells = getEmptyCells(currentBoard);
+            for (let i of emptyCells) {
+                currentBoard[i] = player;
+                if (checkWin(currentBoard, player)) {
+                    currentBoard[i] = '';
+                    return i;
+                }
+                currentBoard[i] = '';
+            }
+            return -1;
+        }
+
+        // Ultra-Aggressive Heuristic: Detects open-ended threats & lethal forks
+        function evaluateBoard(currentBoard) {
+            let score = 0;
+            for (let pattern of winPatterns) {
+                let aiCount = 0;
+                let playerCount = 0;
+                let emptyIndices = [];
+
+                for (let index of pattern) {
+                    if (currentBoard[index] === AI) aiCount++;
+                    else if (currentBoard[index] === PLAYER) playerCount++;
+                    else emptyIndices.push(index);
+                }
+                
+                if (aiCount > 0 && playerCount === 0) {
+                    score += Math.pow(12, aiCount);
+                    // Bonus for open-ended lines (easier to turn into forks)
+                    if (emptyIndices.length >= 2) score += Math.pow(5, aiCount);
+                } else if (playerCount > 0 && aiCount === 0) {
+                    score -= Math.pow(15, playerCount); // Heavy paranoia blocking
+                    if (emptyIndices.length >= 2) score -= Math.pow(8, playerCount);
+                }
+            }
+            return score;
+        }
+
+        function getSmartMove(currentBoard, maxDepth) {
+            let winMove = findWinningMove(currentBoard, AI);
+            if (winMove !== -1) return winMove;
+
+            let blockMove = findWinningMove(currentBoard, PLAYER);
+            if (blockMove !== -1) return blockMove;
+
+            let bestScore = -Infinity;
+            let move = -1;
+            const orderedMoves = getOrderedMoves(currentBoard);
+            
+            if (orderedMoves.length === size * size) {
+                return Math.floor((size * size) / 2);
+            }
+
+            for (let i of orderedMoves) {
+                currentBoard[i] = AI;
+                let score = minimax(currentBoard, 0, false, -Infinity, Infinity, maxDepth);
+                currentBoard[i] = '';
+                if (score > bestScore) {
+                    bestScore = score;
+                    move = i;
+                }
+            }
+            return move !== -1 ? move : getRandomMove(currentBoard);
+        }
+
+        function minimax(currentBoard, depth, isMaximizing, alpha, beta, maxDepth) {
+            if (checkWin(currentBoard, AI)) return 1000000 - depth;
+            if (checkWin(currentBoard, PLAYER)) return depth - 1000000;
+            if (getEmptyCells(currentBoard).length === 0) return 0;
+            
+            if (depth >= maxDepth) return evaluateBoard(currentBoard);
+
+            const moves = getOrderedMoves(currentBoard);
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i of moves) {
+                    currentBoard[i] = AI;
+                    let score = minimax(currentBoard, depth + 1, false, alpha, beta, maxDepth);
+                    currentBoard[i] = '';
+                    bestScore = Math.max(score, bestScore);
+                    alpha = Math.max(alpha, bestScore);
+                    if (beta <= alpha) break; 
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i of moves) {
+                    currentBoard[i] = PLAYER;
+                    let score = minimax(currentBoard, depth + 1, true, alpha, beta, maxDepth);
+                    currentBoard[i] = '';
+                    bestScore = Math.min(score, bestScore);
+                    beta = Math.min(beta, bestScore);
+                    if (beta <= alpha) break; 
+                }
+                return bestScore;
+            }
+        }
+
+        // --- GAME UTILITIES ---
+
+        function checkWin(currentBoard, player) {
+            return winPatterns.some(pattern => {
+                return pattern.every(index => currentBoard[index] === player);
+            });
+        }
+
+        function checkDraw(currentBoard) {
+            return !currentBoard.includes('');
+        }
+
+        function triggerEndGame(text, colorClass) {
+            stopTimer();
+            isGameActive = false;
+            winnerText.innerText = text;
+            
+            winnerText.className = '';
+            winnerText.classList.add(colorClass);
+            
+            overlay.classList.add('active');
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                setTimeout(initGame, 500); 
+            }, 3000);
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
