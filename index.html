@@ -15,6 +15,7 @@
             --warning-neon: #ffaa00;
             --text-glow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.5);
             --danger-glow: 0 0 10px rgba(255, 0, 60, 0.8);
+            --warning-glow: 0 0 10px rgba(255, 170, 0, 0.8);
         }
 
         * {
@@ -42,7 +43,7 @@
 
         h1 {
             font-size: 3.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             color: #fff;
             text-transform: uppercase;
             letter-spacing: 5px;
@@ -53,7 +54,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             align-items: center;
             justify-content: center;
             background: rgba(0, 255, 255, 0.05);
@@ -63,6 +64,7 @@
             box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.1), 0 0 15px rgba(0, 255, 255, 0.2);
             width: 100%;
             max-width: 650px;
+            z-index: 5;
         }
 
         .hud-group {
@@ -72,7 +74,7 @@
         }
 
         label {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: var(--grid-neon);
             text-shadow: 0 0 5px var(--grid-neon);
         }
@@ -101,7 +103,6 @@
 
         select#difficulty option[value="doomsday"] {
             color: var(--danger-neon);
-            text-shadow: var(--danger-glow);
         }
 
         /* Timer UI */
@@ -112,7 +113,7 @@
             background: rgba(255, 0, 60, 0.1);
             border: 1px solid var(--danger-neon);
             border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 0 10px rgba(255, 0, 60, 0.2);
             overflow: hidden;
             display: none;
@@ -136,59 +137,10 @@
             position: relative;
         }
 
-        /* Start Warning Overlay over the board */
-        .start-screen {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 5, 10, 0.92);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            padding: 20px;
-            text-align: center;
-            border-radius: 3px;
-        }
-
-        .start-screen h3 {
-            color: var(--warning-neon);
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px var(--warning-neon);
-        }
-
-        .start-screen p {
-            color: #fff;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            opacity: 0.8;
-            max-width: 80%;
-        }
-
-        .start-btn {
-            background: transparent;
-            color: var(--danger-neon);
-            border: 2px solid var(--danger-neon);
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 0, 60, 0.4), inset 0 0 15px rgba(255, 0, 60, 0.2);
-            transition: all 0.3s;
-            letter-spacing: 2px;
-        }
-
-        .start-btn:hover {
-            background: var(--danger-neon);
-            color: #000;
-            box-shadow: 0 0 30px var(--danger-neon);
-        }
-
         .loading {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 5, 10, 0.85);
+            background: rgba(5, 5, 10, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -232,7 +184,7 @@
             text-shadow: 0 0 10px var(--o-neon), 0 0 20px var(--o-neon), 0 0 40px var(--o-neon);
         }
 
-        /* Fullscreen Overlay */
+        /* Overlays */
         .overlay {
             position: fixed;
             top: 0;
@@ -248,7 +200,7 @@
             z-index: 100;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.3s ease-in-out;
         }
 
         .overlay.active {
@@ -257,9 +209,9 @@
         }
 
         .overlay h2 {
-            font-size: 6rem;
+            font-size: 5rem;
             text-transform: uppercase;
-            letter-spacing: 10px;
+            letter-spacing: 5px;
             margin-bottom: 20px;
             text-align: center;
         }
@@ -268,33 +220,67 @@
             font-size: 1.5rem;
             color: #fff;
             letter-spacing: 2px;
-            opacity: 0.7;
-            animation: pulse 1s infinite alternate;
+            margin-bottom: 30px;
+            text-align: center;
         }
 
-        .win-x {
-            color: var(--x-neon);
-            text-shadow: 0 0 20px var(--x-neon), 0 0 50px var(--x-neon), 0 0 100px var(--x-neon);
+        .win-x { color: var(--x-neon); text-shadow: 0 0 20px var(--x-neon), 0 0 50px var(--x-neon); }
+        .win-o { color: var(--o-neon); text-shadow: 0 0 20px var(--o-neon), 0 0 50px var(--o-neon); }
+        .win-danger { color: var(--danger-neon); text-shadow: 0 0 20px var(--danger-neon), 0 0 50px var(--danger-neon); }
+        .draw { color: #fff; text-shadow: 0 0 20px #fff, 0 0 50px #fff; }
+
+        /* Warnings & Buttons */
+        #warningScreen h2 {
+            color: var(--warning-neon);
+            text-shadow: var(--warning-glow);
+            font-size: 4rem;
         }
 
-        .win-o {
-            color: var(--o-neon);
-            text-shadow: 0 0 20px var(--o-neon), 0 0 50px var(--o-neon), 0 0 100px var(--o-neon);
+        .btn-outline {
+            background: transparent;
+            color: var(--warning-neon);
+            border: 2px solid var(--warning-neon);
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.3), inset 0 0 10px rgba(255, 170, 0, 0.2);
+            transition: all 0.3s;
         }
 
-        .win-danger {
-            color: var(--danger-neon);
-            text-shadow: 0 0 20px var(--danger-neon), 0 0 50px var(--danger-neon), 0 0 100px var(--danger-neon);
+        .btn-outline:hover {
+            background: rgba(255, 170, 0, 0.2);
+            box-shadow: 0 0 30px var(--warning-neon), inset 0 0 20px var(--warning-neon);
+            text-shadow: 0 0 10px var(--warning-neon);
         }
 
-        .draw {
-            color: #fff;
-            text-shadow: 0 0 20px #fff, 0 0 50px #fff;
+        .btn-massive {
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--grid-neon);
+            border: 4px solid var(--grid-neon);
+            padding: 40px 100px;
+            font-size: 6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.2);
+            text-shadow: 0 0 20px var(--grid-neon);
+            transition: all 0.2s;
+            animation: pulse-btn 1s infinite alternate;
         }
 
-        @keyframes pulse {
-            from { opacity: 0.5; }
-            to { opacity: 1; }
+        .btn-massive:hover {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 80px var(--grid-neon), inset 0 0 50px var(--grid-neon);
+            transform: scale(1.05);
+            animation: none;
+        }
+
+        @keyframes pulse-btn {
+            from { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.2); }
+            to { box-shadow: 0 0 60px rgba(0, 255, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.4); }
         }
     </style>
 </head>
@@ -306,19 +292,19 @@
         <div class="hud-group">
             <label for="boardSize">GRID:</label>
             <select id="boardSize" onchange="initGame()">
-                <option value="3">3x3 (Classic)</option>
+                <option value="3" selected>3x3 (Classic)</option>
                 <option value="4">4x4 (Advanced)</option>
                 <option value="5">5x5 (Expert)</option>
                 <option value="6">6x6 (Ultimate)</option>
             </select>
         </div>
         <div class="hud-group">
-            <label for="difficulty">LEVELS:</label>
+            <label for="difficulty" onchange="initGame()">LEVELS:</label>
             <select id="difficulty" onchange="initGame()">
-                <option value="easy">V1.0 - GLITCH</option>
+                <option value="easy" selected>V1.0 - GLITCH</option>
                 <option value="medium">V2.0 - FIREWALL</option>
-                <option value="hard">V3.0 - NEXUS (2s limit)</option>
-                <option value="doomsday" selected>V4.0 - DOOMSDAY (1.5s limit)</option>
+                <option value="hard">V3.0 - NEXUS (1.8s limit)</option>
+                <option value="doomsday">V4.0 - DOOMSDAY (1.2s limit)</option>
             </select>
         </div>
     </div>
@@ -328,28 +314,38 @@
     </div>
 
     <div class="board" id="board">
-        <div class="start-screen" id="startScreen" style="display: none;">
-            <h3>⚠️ TIME CRITICAL PROTOCOL ⚠️</h3>
-            <p id="warningText">HIGH SPEED AI ENGAGED. TIMER WILL START IMMEDIATELY AFTER LAUNCH.</p>
-            <button class="start-btn" onclick="startTimedMode()">ENGAGE PROTOCOL</button>
-        </div>
         <div class="loading" id="loading">CALCULATING...</div>
     </div>
 
+    <!-- Step 1: Warning Overlay -->
+    <div id="warningScreen" class="overlay">
+        <h2>CRITICAL LOW TIME WARNING</h2>
+        <p>YOU WILL HAVE LIMITED TIME TO MAKE A MOVE.<br>HESITATION MEANS DEFEAT.</p>
+        <button class="btn-outline" onclick="acknowledgeWarning()">OK, UNDERSTOOD</button>
+    </div>
+
+    <!-- Step 2: Giant Start Button Overlay -->
+    <div id="startScreen" class="overlay">
+        <button class="btn-massive" onclick="startGameSequence()">START</button>
+    </div>
+
+    <!-- Post-game Overlay -->
     <div id="overlay" class="overlay">
         <h2 id="winnerText">WINNER</h2>
-        <p>SYSTEM REBOOTING IN 3 SECONDS...</p>
+        <p style="animation: none;">REBOOTING IN 3 SECONDS...</p>
     </div>
 
     <script>
         const difficultySelect = document.getElementById('difficulty');
         const boardSizeSelect = document.getElementById('boardSize');
+        
         const overlay = document.getElementById('overlay');
+        const warningScreen = document.getElementById('warningScreen');
+        const startScreen = document.getElementById('startScreen');
         const winnerText = document.getElementById('winnerText');
+        
         const boardElem = document.getElementById('board');
         const loadingIndicator = document.getElementById('loading');
-        const startScreen = document.getElementById('startScreen');
-        const warningText = document.getElementById('warningText');
         
         const timerWrapper = document.getElementById('timerWrapper');
         const timerBar = document.getElementById('timerBar');
@@ -359,7 +355,7 @@
         
         let size = 3;
         let board = [];
-        let isGameActive = false;
+        let isGameActive = false; 
         let isPlayerTurn = true;
         let winPatterns = [];
         
@@ -374,24 +370,29 @@
             generateWinPatterns();
             renderBoard();
 
-            const diff = difficultySelect.value;
-            if (diff === 'hard' || diff === 'doomsday') {
+            const difficulty = difficultySelect.value;
+            
+            // Handle Overlays & Start Logic based on difficulty
+            if (difficulty === 'hard' || difficulty === 'doomsday') {
                 isGameActive = false;
                 timerWrapper.style.display = 'block';
-                timerBar.style.transform = 'scaleX(1)';
-                startScreen.style.display = 'flex';
-                warningText.innerText = diff === 'doomsday' 
-                    ? "ULTRASONIC AI ENGAGED. YOU HAVE EXACTLY 1.5 SECONDS PER MOVE."
-                    : "ADVANCED AI ENGAGED. YOU HAVE EXACTLY 2.0 SECONDS PER MOVE.";
+                warningScreen.classList.add('active');
+                startScreen.classList.remove('active');
             } else {
-                startScreen.style.display = 'none';
-                timerWrapper.style.display = 'none';
                 isGameActive = true;
+                timerWrapper.style.display = 'none';
+                warningScreen.classList.remove('active');
+                startScreen.classList.remove('active');
             }
         }
 
-        function startTimedMode() {
-            startScreen.style.display = 'none';
+        function acknowledgeWarning() {
+            warningScreen.classList.remove('active');
+            startScreen.classList.add('active');
+        }
+
+        function startGameSequence() {
+            startScreen.classList.remove('active');
             isGameActive = true;
             startTimer();
         }
@@ -443,21 +444,22 @@
             if (!isGameActive || !isPlayerTurn) return;
 
             const difficulty = difficultySelect.value;
-            if (difficulty === 'hard') timeLimit = 2000;
-            else if (difficulty === 'doomsday') timeLimit = 1500;
+            if (difficulty === 'hard') timeLimit = 1800;
+            else if (difficulty === 'doomsday') timeLimit = 1200;
             else timeLimit = 0;
 
             if (timeLimit > 0) {
                 timerBar.style.transition = 'none';
                 timerBar.style.transform = 'scaleX(1)';
-                void timerBar.offsetWidth; 
+                
+                void timerBar.offsetWidth; // Force reflow
 
                 timerBar.style.transition = `transform ${timeLimit}ms linear`;
                 timerBar.style.transform = 'scaleX(0)';
 
                 turnTimer = setTimeout(() => {
                     if (isPlayerTurn && isGameActive) {
-                        triggerEndGame("TIME OUT - SYSTEM WINS", 'win-danger');
+                        triggerEndGame("TIME OUT", 'win-danger');
                     }
                 }, timeLimit);
             }
@@ -480,7 +482,7 @@
             if (checkWin(board, PLAYER)) {
                 triggerEndGame("PLAYER WINS", 'win-x');
             } else if (checkDraw(board)) {
-                triggerEndGame("DRAW / FULL", 'draw');
+                triggerEndGame("DRAW", 'draw');
             } else {
                 isPlayerTurn = false;
                 
@@ -491,7 +493,7 @@
                         loadingIndicator.classList.remove('active');
                     }, 50);
                 } else {
-                    setTimeout(makeBotMove, 150); 
+                    setTimeout(makeBotMove, 150);
                 }
             }
         }
@@ -514,9 +516,8 @@
             } else if (difficulty === 'medium') {
                 bestMoveIndex = getMediumMove(board);
             } else if (difficulty === 'hard') {
-                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 4 : 3)); 
+                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : 3); 
             } else {
-                // DOOMSDAY: Increased search depth due to Move Ordering optimization
                 bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 5 : 4)); 
             }
 
@@ -525,47 +526,17 @@
             if (checkWin(board, AI)) {
                 triggerEndGame("SYSTEM WINS", 'win-o');
             } else if (checkDraw(board)) {
-                triggerEndGame("DRAW / FULL", 'draw');
+                triggerEndGame("DRAW", 'draw');
             } else {
                 isPlayerTurn = true;
                 startTimer(); 
             }
         }
 
-        // --- ENHANCED BOT PROTOCOLS ---
+        // --- BOT PROTOCOLS ---
 
         function getEmptyCells(currentBoard) {
             return currentBoard.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
-        }
-
-        // Move Ordering: Prioritize center and cells adjacent to occupied pieces for faster pruning
-        function getOrderedMoves(currentBoard) {
-            const emptyCells = getEmptyCells(currentBoard);
-            const center = Math.floor((size * size) / 2);
-
-            return emptyCells.sort((a, b) => {
-                if (a === center) return -1;
-                if (b === center) return 1;
-                
-                // Count occupied neighbors
-                return countNeighbors(currentBoard, b) - countNeighbors(currentBoard, a);
-            });
-        }
-
-        function countNeighbors(currentBoard, idx) {
-            let r = Math.floor(idx / size);
-            let c = idx % size;
-            let count = 0;
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    if (dr === 0 && dc === 0) continue;
-                    let nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-                        if (currentBoard[nr * size + nc] !== '') count++;
-                    }
-                }
-            }
-            return count;
         }
 
         function getRandomMove(currentBoard) {
@@ -596,29 +567,25 @@
             return -1;
         }
 
-        // Ultra-Aggressive Heuristic: Detects open-ended threats & lethal forks
         function evaluateBoard(currentBoard) {
             let score = 0;
             for (let pattern of winPatterns) {
                 let aiCount = 0;
                 let playerCount = 0;
-                let emptyIndices = [];
-
                 for (let index of pattern) {
                     if (currentBoard[index] === AI) aiCount++;
                     else if (currentBoard[index] === PLAYER) playerCount++;
-                    else emptyIndices.push(index);
                 }
                 
                 if (aiCount > 0 && playerCount === 0) {
-                    score += Math.pow(12, aiCount);
-                    // Bonus for open-ended lines (easier to turn into forks)
-                    if (emptyIndices.length >= 2) score += Math.pow(5, aiCount);
+                    score += Math.pow(10, aiCount);
                 } else if (playerCount > 0 && aiCount === 0) {
-                    score -= Math.pow(15, playerCount); // Heavy paranoia blocking
-                    if (emptyIndices.length >= 2) score -= Math.pow(8, playerCount);
+                    score -= Math.pow(15, playerCount); 
                 }
             }
+            let center = Math.floor((size * size) / 2);
+            if (currentBoard[center] === AI) score += 50;
+            else if (currentBoard[center] === PLAYER) score -= 50;
             return score;
         }
 
@@ -631,13 +598,14 @@
 
             let bestScore = -Infinity;
             let move = -1;
-            const orderedMoves = getOrderedMoves(currentBoard);
+            const emptyCells = getEmptyCells(currentBoard);
             
-            if (orderedMoves.length === size * size) {
-                return Math.floor((size * size) / 2);
+            if (emptyCells.length === size * size) {
+                let center = Math.floor((size * size) / 2);
+                return currentBoard[center] === '' ? center : 0;
             }
 
-            for (let i of orderedMoves) {
+            for (let i of emptyCells) {
                 currentBoard[i] = AI;
                 let score = minimax(currentBoard, 0, false, -Infinity, Infinity, maxDepth);
                 currentBoard[i] = '';
@@ -656,11 +624,9 @@
             
             if (depth >= maxDepth) return evaluateBoard(currentBoard);
 
-            const moves = getOrderedMoves(currentBoard);
-
             if (isMaximizing) {
                 let bestScore = -Infinity;
-                for (let i of moves) {
+                for (let i of getEmptyCells(currentBoard)) {
                     currentBoard[i] = AI;
                     let score = minimax(currentBoard, depth + 1, false, alpha, beta, maxDepth);
                     currentBoard[i] = '';
@@ -671,7 +637,7 @@
                 return bestScore;
             } else {
                 let bestScore = Infinity;
-                for (let i of moves) {
+                for (let i of getEmptyCells(currentBoard)) {
                     currentBoard[i] = PLAYER;
                     let score = minimax(currentBoard, depth + 1, true, alpha, beta, maxDepth);
                     currentBoard[i] = '';
@@ -682,8 +648,6 @@
                 return bestScore;
             }
         }
-
-        // --- GAME UTILITIES ---
 
         function checkWin(currentBoard, player) {
             return winPatterns.some(pattern => {
@@ -711,6 +675,7 @@
             }, 3000);
         }
 
+        // Start on load
         window.onload = initGame;
     </script>
 </body>
