@@ -63,7 +63,7 @@
             border-radius: 10px;
             box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.1), 0 0 15px rgba(0, 255, 255, 0.2);
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             z-index: 5;
         }
 
@@ -105,7 +105,35 @@
             color: var(--danger-neon);
         }
 
-        /* Timer UI */
+        .btn-top-start {
+            background: rgba(255, 0, 60, 0.1);
+            color: var(--danger-neon);
+            border: 2px solid var(--danger-neon);
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.3), inset 0 0 10px rgba(255, 0, 60, 0.2);
+            text-shadow: 0 0 10px var(--danger-neon);
+            transition: all 0.2s;
+            display: none;
+            animation: pulse-start 1.5s infinite alternate;
+        }
+
+        .btn-top-start:hover {
+            background: rgba(255, 0, 60, 0.3);
+            box-shadow: 0 0 25px var(--danger-neon), inset 0 0 15px var(--danger-neon);
+            transform: scale(1.05);
+            animation: none;
+        }
+
+        @keyframes pulse-start {
+            from { box-shadow: 0 0 10px rgba(255, 0, 60, 0.3); }
+            to { box-shadow: 0 0 20px rgba(255, 0, 60, 0.6); }
+        }
+
         .timer-wrapper {
             width: 100%;
             max-width: 650px;
@@ -184,7 +212,6 @@
             text-shadow: 0 0 10px var(--o-neon), 0 0 20px var(--o-neon), 0 0 40px var(--o-neon);
         }
 
-        /* Overlays */
         .overlay {
             position: fixed;
             top: 0;
@@ -229,7 +256,6 @@
         .win-danger { color: var(--danger-neon); text-shadow: 0 0 20px var(--danger-neon), 0 0 50px var(--danger-neon); }
         .draw { color: #fff; text-shadow: 0 0 20px #fff, 0 0 50px #fff; }
 
-        /* Warnings & Buttons */
         #warningScreen h2 {
             color: var(--warning-neon);
             text-shadow: var(--warning-glow);
@@ -253,34 +279,6 @@
             background: rgba(255, 170, 0, 0.2);
             box-shadow: 0 0 30px var(--warning-neon), inset 0 0 20px var(--warning-neon);
             text-shadow: 0 0 10px var(--warning-neon);
-        }
-
-        .btn-massive {
-            background: rgba(0, 255, 255, 0.1);
-            color: var(--grid-neon);
-            border: 4px solid var(--grid-neon);
-            padding: 40px 100px;
-            font-size: 6rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.2);
-            text-shadow: 0 0 20px var(--grid-neon);
-            transition: all 0.2s;
-            animation: pulse-btn 1s infinite alternate;
-        }
-
-        .btn-massive:hover {
-            background: rgba(0, 255, 255, 0.3);
-            box-shadow: 0 0 80px var(--grid-neon), inset 0 0 50px var(--grid-neon);
-            transform: scale(1.05);
-            animation: none;
-        }
-
-        @keyframes pulse-btn {
-            from { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.2); }
-            to { box-shadow: 0 0 60px rgba(0, 255, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.4); }
         }
     </style>
 </head>
@@ -307,6 +305,7 @@
                 <option value="doomsday">V4.0 - DOOMSDAY (1.2s limit)</option>
             </select>
         </div>
+        <button id="topStartBtn" class="btn-top-start" onclick="startGameSequence()">START</button>
     </div>
 
     <div class="timer-wrapper" id="timerWrapper">
@@ -317,19 +316,12 @@
         <div class="loading" id="loading">CALCULATING...</div>
     </div>
 
-    <!-- Step 1: Warning Overlay -->
     <div id="warningScreen" class="overlay">
         <h2>CRITICAL LOW TIME WARNING</h2>
         <p>YOU WILL HAVE LIMITED TIME TO MAKE A MOVE.<br>HESITATION MEANS DEFEAT.</p>
         <button class="btn-outline" onclick="acknowledgeWarning()">OK, UNDERSTOOD</button>
     </div>
 
-    <!-- Step 2: Giant Start Button Overlay -->
-    <div id="startScreen" class="overlay">
-        <button class="btn-massive" onclick="startGameSequence()">START</button>
-    </div>
-
-    <!-- Post-game Overlay -->
     <div id="overlay" class="overlay">
         <h2 id="winnerText">WINNER</h2>
         <p style="animation: none;">REBOOTING IN 3 SECONDS...</p>
@@ -341,7 +333,7 @@
         
         const overlay = document.getElementById('overlay');
         const warningScreen = document.getElementById('warningScreen');
-        const startScreen = document.getElementById('startScreen');
+        const topStartBtn = document.getElementById('topStartBtn');
         const winnerText = document.getElementById('winnerText');
         
         const boardElem = document.getElementById('board');
@@ -361,6 +353,7 @@
         
         let turnTimer;
         let timeLimit = 0;
+        let hasSeenWarning = false;
 
         function initGame() {
             stopTimer();
@@ -372,27 +365,32 @@
 
             const difficulty = difficultySelect.value;
             
-            // Handle Overlays & Start Logic based on difficulty
             if (difficulty === 'hard' || difficulty === 'doomsday') {
                 isGameActive = false;
                 timerWrapper.style.display = 'block';
-                warningScreen.classList.add('active');
-                startScreen.classList.remove('active');
+                topStartBtn.style.display = 'none';
+
+                if (!hasSeenWarning) {
+                    warningScreen.classList.add('active');
+                } else {
+                    topStartBtn.style.display = 'block';
+                }
             } else {
                 isGameActive = true;
                 timerWrapper.style.display = 'none';
                 warningScreen.classList.remove('active');
-                startScreen.classList.remove('active');
+                topStartBtn.style.display = 'none';
             }
         }
 
         function acknowledgeWarning() {
+            hasSeenWarning = true;
             warningScreen.classList.remove('active');
-            startScreen.classList.add('active');
+            topStartBtn.style.display = 'block';
         }
 
         function startGameSequence() {
-            startScreen.classList.remove('active');
+            topStartBtn.style.display = 'none';
             isGameActive = true;
             startTimer();
         }
@@ -452,7 +450,7 @@
                 timerBar.style.transition = 'none';
                 timerBar.style.transform = 'scaleX(1)';
                 
-                void timerBar.offsetWidth; // Force reflow
+                void timerBar.offsetWidth;
 
                 timerBar.style.transition = `transform ${timeLimit}ms linear`;
                 timerBar.style.transform = 'scaleX(0)';
@@ -533,7 +531,7 @@
             }
         }
 
-        // --- BOT PROTOCOLS ---
+        // --- ENHANCED BOT PROTOCOLS ---
 
         function getEmptyCells(currentBoard) {
             return currentBoard.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
@@ -597,24 +595,38 @@
             if (blockMove !== -1) return blockMove;
 
             let bestScore = -Infinity;
-            let move = -1;
+            let bestMoves = []; 
             const emptyCells = getEmptyCells(currentBoard);
             
+            // Randomize first move to make it completely unpredictable
             if (emptyCells.length === size * size) {
-                let center = Math.floor((size * size) / 2);
-                return currentBoard[center] === '' ? center : 0;
+                if (size === 3) {
+                    const starters = [0, 2, 4, 6, 8]; // Corners and Center
+                    return starters[Math.floor(Math.random() * starters.length)];
+                } else {
+                    let center = Math.floor((size * size) / 2);
+                    let center2 = Math.floor((size * size) / 2) - 1;
+                    const starters = [center, center2];
+                    return starters[Math.floor(Math.random() * starters.length)];
+                }
             }
 
             for (let i of emptyCells) {
                 currentBoard[i] = AI;
                 let score = minimax(currentBoard, 0, false, -Infinity, Infinity, maxDepth);
                 currentBoard[i] = '';
+                
+                // Collect ALL best moves instead of just picking the first one
                 if (score > bestScore) {
                     bestScore = score;
-                    move = i;
+                    bestMoves = [i]; 
+                } else if (score === bestScore) {
+                    bestMoves.push(i); 
                 }
             }
-            return move !== -1 ? move : getRandomMove(currentBoard);
+            
+            // Pick a random move among the optimal ones
+            return bestMoves.length > 0 ? bestMoves[Math.floor(Math.random() * bestMoves.length)] : getRandomMove(currentBoard);
         }
 
         function minimax(currentBoard, depth, isMaximizing, alpha, beta, maxDepth) {
@@ -675,7 +687,6 @@
             }, 3000);
         }
 
-        // Start on load
         window.onload = initGame;
     </script>
 </body>
