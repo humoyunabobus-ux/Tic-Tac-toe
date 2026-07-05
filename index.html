@@ -13,6 +13,7 @@
             --o-neon: #f0f;
             --danger-neon: #ff003c;
             --warning-neon: #ffaa00;
+            --gemini-neon: #8a2be2;
             --text-glow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.5);
             --danger-glow: 0 0 10px rgba(255, 0, 60, 0.8);
             --warning-glow: 0 0 10px rgba(255, 170, 0, 0.8);
@@ -63,7 +64,7 @@
             border-radius: 10px;
             box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.1), 0 0 15px rgba(0, 255, 255, 0.2);
             width: 100%;
-            max-width: 750px;
+            max-width: 850px;
             z-index: 5;
         }
 
@@ -101,9 +102,8 @@
             box-shadow: 0 0 20px var(--grid-neon);
         }
 
-        select#difficulty option[value="doomsday"] {
-            color: var(--danger-neon);
-        }
+        select#difficulty option[value="doomsday"] { color: var(--danger-neon); }
+        select#difficulty option[value="gemini"] { color: var(--gemini-neon); font-weight: bold; }
 
         .btn-top-start {
             background: rgba(255, 0, 60, 0.1);
@@ -254,6 +254,7 @@
         .win-x { color: var(--x-neon); text-shadow: 0 0 20px var(--x-neon), 0 0 50px var(--x-neon); }
         .win-o { color: var(--o-neon); text-shadow: 0 0 20px var(--o-neon), 0 0 50px var(--o-neon); }
         .win-danger { color: var(--danger-neon); text-shadow: 0 0 20px var(--danger-neon), 0 0 50px var(--danger-neon); }
+        .win-gemini { color: var(--gemini-neon); text-shadow: 0 0 20px var(--gemini-neon), 0 0 50px var(--gemini-neon); }
         .draw { color: #fff; text-shadow: 0 0 20px #fff, 0 0 50px #fff; }
 
         #warningScreen h2 {
@@ -280,6 +281,14 @@
             box-shadow: 0 0 30px var(--warning-neon), inset 0 0 20px var(--warning-neon);
             text-shadow: 0 0 10px var(--warning-neon);
         }
+        
+        .turn-indicator {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-top: 10px;
+            text-shadow: 0 0 5px #fff;
+            letter-spacing: 2px;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +312,7 @@
                 <option value="medium">V2.0 - FIREWALL</option>
                 <option value="hard">V3.0 - NEXUS (1.8s limit)</option>
                 <option value="doomsday">V4.0 - DOOMSDAY (1.2s limit)</option>
+                <option value="gemini">V5.0 - GEMINI (PRO AI)</option>
             </select>
         </div>
         <button id="topStartBtn" class="btn-top-start" onclick="startGameSequence()">START</button>
@@ -311,6 +321,10 @@
     <div class="timer-wrapper" id="timerWrapper">
         <div class="timer-bar" id="timerBar"></div>
     </div>
+    
+    <div id="turnIndicator" class="turn-indicator"></div>
+
+    <br>
 
     <div class="board" id="board">
         <div class="loading" id="loading">CALCULATING...</div>
@@ -341,6 +355,7 @@
         
         const timerWrapper = document.getElementById('timerWrapper');
         const timerBar = document.getElementById('timerBar');
+        const turnIndicator = document.getElementById('turnIndicator');
         
         const PLAYER = 'X';
         const AI = 'O';
@@ -348,6 +363,9 @@
         let size = 3;
         let board = [];
         let isGameActive = false; 
+        
+        // Переменная для контроля, кто начинает раунд (меняется каждую игру)
+        let humanStartsThisMatch = true; 
         let isPlayerTurn = true;
         let winPatterns = [];
         
@@ -359,13 +377,16 @@
             stopTimer();
             size = parseInt(boardSizeSelect.value);
             board = new Array(size * size).fill('');
-            isPlayerTurn = true;
+            isPlayerTurn = humanStartsThisMatch; 
+            
+            updateTurnIndicator();
             generateWinPatterns();
             renderBoard();
 
             const difficulty = difficultySelect.value;
             
-            if (difficulty === 'hard' || difficulty === 'doomsday') {
+            // Если выбран режим на время
+            if (difficulty === 'hard' || difficulty === 'doomsday' || difficulty === 'gemini') {
                 isGameActive = false;
                 timerWrapper.style.display = 'block';
                 topStartBtn.style.display = 'none';
@@ -376,10 +397,23 @@
                     topStartBtn.style.display = 'block';
                 }
             } else {
+                // Если легкие режимы (без кнопки старта)
                 isGameActive = true;
                 timerWrapper.style.display = 'none';
                 warningScreen.classList.remove('active');
                 topStartBtn.style.display = 'none';
+                
+                if (!isPlayerTurn) {
+                    setTimeout(makeBotMove, 500);
+                }
+            }
+        }
+
+        function updateTurnIndicator() {
+            if (!isGameActive && topStartBtn.style.display === 'block') {
+                turnIndicator.innerText = isPlayerTurn ? "WAITING FOR PLAYER TO START..." : "WAITING FOR AI TO START...";
+            } else {
+                turnIndicator.innerText = isPlayerTurn ? "YOUR TURN (X)" : "SYSTEM TURN (O)";
             }
         }
 
@@ -387,12 +421,24 @@
             hasSeenWarning = true;
             warningScreen.classList.remove('active');
             topStartBtn.style.display = 'block';
+            updateTurnIndicator();
         }
 
         function startGameSequence() {
             topStartBtn.style.display = 'none';
             isGameActive = true;
-            startTimer();
+            updateTurnIndicator();
+            
+            // Если начинает ИИ, запускаем его ход, иначе запускаем таймер игрока
+            if (!isPlayerTurn) {
+                loadingIndicator.classList.add('active');
+                setTimeout(() => {
+                    makeBotMove();
+                    loadingIndicator.classList.remove('active');
+                }, 400);
+            } else {
+                startTimer();
+            }
         }
 
         function generateWinPatterns() {
@@ -444,6 +490,7 @@
             const difficulty = difficultySelect.value;
             if (difficulty === 'hard') timeLimit = 1800;
             else if (difficulty === 'doomsday') timeLimit = 1200;
+            else if (difficulty === 'gemini') timeLimit = 1000; // У тебя 1 секунда против меня
             else timeLimit = 0;
 
             if (timeLimit > 0) {
@@ -483,8 +530,9 @@
                 triggerEndGame("DRAW", 'draw');
             } else {
                 isPlayerTurn = false;
+                updateTurnIndicator();
                 
-                if (difficultySelect.value === 'doomsday' && size > 3) {
+                if ((difficultySelect.value === 'doomsday' || difficultySelect.value === 'gemini') && size > 3) {
                     loadingIndicator.classList.add('active');
                     setTimeout(() => {
                         makeBotMove();
@@ -514,19 +562,24 @@
             } else if (difficulty === 'medium') {
                 bestMoveIndex = getMediumMove(board);
             } else if (difficulty === 'hard') {
-                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : 3); 
-            } else {
-                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 5 : 4)); 
+                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : 3, false); 
+            } else if (difficulty === 'doomsday') {
+                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 5 : 4), false); 
+            } else if (difficulty === 'gemini') {
+                bestMoveIndex = getSmartMove(board, size === 3 ? 9 : (size === 4 ? 5 : 4), true); // Включена агрессия
             }
 
             makeMove(bestMoveIndex, AI);
 
             if (checkWin(board, AI)) {
-                triggerEndGame("SYSTEM WINS", 'win-o');
+                let winClass = difficulty === 'gemini' ? 'win-gemini' : 'win-o';
+                let winText = difficulty === 'gemini' ? "GEMINI WINS" : "SYSTEM WINS";
+                triggerEndGame(winText, winClass);
             } else if (checkDraw(board)) {
                 triggerEndGame("DRAW", 'draw');
             } else {
                 isPlayerTurn = true;
+                updateTurnIndicator();
                 startTimer(); 
             }
         }
@@ -587,7 +640,7 @@
             return score;
         }
 
-        function getSmartMove(currentBoard, maxDepth) {
+        function getSmartMove(currentBoard, maxDepth, isGemini) {
             let winMove = findWinningMove(currentBoard, AI);
             if (winMove !== -1) return winMove;
 
@@ -598,11 +651,17 @@
             let bestMoves = []; 
             const emptyCells = getEmptyCells(currentBoard);
             
-            // Randomize first move to make it completely unpredictable
+            // Если бот ходит первым на пустой доске
             if (emptyCells.length === size * size) {
                 if (size === 3) {
-                    const starters = [0, 2, 4, 6, 8]; // Corners and Center
-                    return starters[Math.floor(Math.random() * starters.length)];
+                    if (isGemini) {
+                        // Gemini агрессивно атакует углы, чтобы создавать вилки
+                        const corners = [0, 2, 6, 8];
+                        return corners[Math.floor(Math.random() * corners.length)];
+                    } else {
+                        const starters = [0, 2, 4, 6, 8];
+                        return starters[Math.floor(Math.random() * starters.length)];
+                    }
                 } else {
                     let center = Math.floor((size * size) / 2);
                     let center2 = Math.floor((size * size) / 2) - 1;
@@ -614,9 +673,16 @@
             for (let i of emptyCells) {
                 currentBoard[i] = AI;
                 let score = minimax(currentBoard, 0, false, -Infinity, Infinity, maxDepth);
+                
+                // Секретный соус Gemini: при одинаковых шансах на ничью (score = 0)
+                // он добавляет бонус за "агрессивность" позиции, строя ловушки
+                if (isGemini) {
+                    let aggressionBonus = evaluateBoard(currentBoard) * 0.001;
+                    score += aggressionBonus;
+                }
+
                 currentBoard[i] = '';
                 
-                // Collect ALL best moves instead of just picking the first one
                 if (score > bestScore) {
                     bestScore = score;
                     bestMoves = [i]; 
@@ -625,7 +691,6 @@
                 }
             }
             
-            // Pick a random move among the optimal ones
             return bestMoves.length > 0 ? bestMoves[Math.floor(Math.random() * bestMoves.length)] : getRandomMove(currentBoard);
         }
 
@@ -674,6 +739,7 @@
         function triggerEndGame(text, colorClass) {
             stopTimer();
             isGameActive = false;
+            turnIndicator.innerText = "";
             winnerText.innerText = text;
             
             winnerText.className = '';
@@ -682,6 +748,7 @@
             overlay.classList.add('active');
 
             setTimeout(() => {
+                humanStartsThisMatch = !humanStartsThisMatch; // Чередуем того, кто ходит первым
                 overlay.classList.remove('active');
                 setTimeout(initGame, 500); 
             }, 3000);
